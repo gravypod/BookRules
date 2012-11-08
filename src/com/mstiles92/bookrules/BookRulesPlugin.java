@@ -1,11 +1,14 @@
 package com.mstiles92.bookrules;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import lib.PatPeter.SQLibrary.SQLite;
 
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -21,6 +24,7 @@ public class BookRulesPlugin extends JavaPlugin {
 	public final String tag = ChatColor.BLUE + "[BookRules] " + ChatColor.GREEN;
 	public boolean updateAvailable = false;
 	public String latestKnownVersion;
+	public SQLite sqlite;
 	
 	public void onEnable() {
 		getCommand("rulebook").setExecutor(new BookRulesCommandExecutor(this));
@@ -35,6 +39,15 @@ public class BookRulesPlugin extends JavaPlugin {
 			metrics.start();
 		} catch (IOException e) {
 			log("Failed to start metrics!");
+		}
+		
+		sqlite = new SQLite(this.getLogger(), "BookRules", "players", this.getDataFolder().getAbsolutePath());
+		try {
+			sqlite.open();
+			sqlite.query("CREATE TABLE IF NOT EXISTS players(Id INTEGER PRIMARY KEY AUTOINCREMENT, Name VARCHAR(20));");
+		} catch (SQLException e) {
+			this.getLogger().warning("SQLite initialization error: " + e.getMessage());
+			this.getPluginLoader().disablePlugin(this);
 		}
 	}
 	
@@ -74,7 +87,7 @@ public class BookRulesPlugin extends JavaPlugin {
 		Map<String, Object> map = books.getConfig().getConfigurationSection(ID + ".Pages").getValues(false);
 		ArrayList<String> list = new ArrayList<String>();
 		for (int i = 0; i < map.size(); i++) {
-			list.add(i, (String) map.get("Page-" + String.valueOf(i)));
+			list.add(i, ((String) map.get("Page-" + String.valueOf(i))));
 		}
 		
 		book.setPages(list);
