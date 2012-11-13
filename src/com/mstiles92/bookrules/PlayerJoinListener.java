@@ -20,9 +20,8 @@ public class PlayerJoinListener implements Listener {
 		}
 		
 		plugin.log("Give-Books-On-First-Join: " + plugin.getConfig().getBoolean("Give-Books-On-First-Join"));
-		plugin.log("Player.hasPlayedBefore(): " + e.getPlayer().hasPlayedBefore());
 		
-		if (!plugin.getConfig().getBoolean("Give-Books-On-First-Join") || e.getPlayer().hasPlayedBefore()) {
+		if (!plugin.getConfig().getBoolean("Give-Books-On-First-Join")) {
 			return;
 		}
 		

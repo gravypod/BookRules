@@ -1,6 +1,7 @@
 package com.mstiles92.bookrules;
 
 import java.io.IOException;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -11,7 +12,6 @@ import java.util.Set;
 import lib.PatPeter.SQLibrary.SQLite;
 
 import org.bukkit.ChatColor;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -53,6 +53,7 @@ public class BookRulesPlugin extends JavaPlugin {
 	
 	public void onDisable() {
 		books.save();
+		sqlite.close();
 	}
 	
 	public void loadConfig() {
@@ -60,7 +61,7 @@ public class BookRulesPlugin extends JavaPlugin {
 		saveConfig();
 		books = new Books(this);
 		books.load("books.yml");
-		orderBooks();
+		//orderBooks();	  //TODO: Remove
 	}
 	
 	public void log(String message) {
@@ -93,6 +94,9 @@ public class BookRulesPlugin extends JavaPlugin {
 		book.setPages(list);
 		
 		p.getInventory().addItem(book.getItemStack(1));
+		
+		sqlite.query("UPDATE players SET Book" + ID + "=1 WHERE Name='" + p.getName() + "';");
+		
 		return true;
 	}
 	
@@ -101,9 +105,39 @@ public class BookRulesPlugin extends JavaPlugin {
 		if (set.size() == 0) {
 			return false;
 		}
-		for (String s : set) {
-			giveBook(p, s);
+		
+		ResultSet rs = sqlite.query("SELECT * FROM players WHERE Name='" + p.getName() + "';");
+		try {
+			if (!rs.next()) {
+				rs.close();
+				sqlite.query("INSERT INTO players(Name) VALUES('" + p.getName() + "');");
+				this.log("Player not yet in database, adding now...");
+				rs = sqlite.query("SELECT * FROM players WHERE Name='" + p.getName() + "';");
+				rs.next();
+			}
+			
+			ArrayList<String> notGiven = new ArrayList<String>();
+			for (String s : set) {
+				if (rs.getShort("Book" + s) != 1) {
+					notGiven.add(s);
+				} else {
+					this.log("Player already given book " + s);
+				}
+			}
+			rs.close();
+			
+			if (notGiven.size() > 0) {
+				p.sendMessage(this.tag + this.getConfig().getString("Welcome-Message"));
+			}
+			
+			for (String s : notGiven) {
+				this.log("Player given book " + s);
+				giveBook(p, s);
+			}
+		} catch (SQLException e) {
+			this.getLogger().warning("SQLite query error: " + e.getMessage());
 		}
+		
 		return true;
 	}
 	
@@ -120,13 +154,15 @@ public class BookRulesPlugin extends JavaPlugin {
 		books.getConfig().set(ID + ".Title", book.getTitle());
 		books.getConfig().set(ID + ".Author", book.getAuthor());
 		books.save();
+		sqlite.query("ALTER TABLE players ADD Book" + ID + " TINYINT(1);");
 	}
 	
 	public boolean deleteBook(String ID) {
 		if (books.getConfig().getConfigurationSection(ID) != null) {
 			books.getConfig().set(ID, null);
 			books.save();
-			orderBooks();
+			sqlite.query("ALTER TABLE players DROP COLUMN Book" + ID + ";");
+			//orderBooks(); //TODO: Remove
 			return true;
 		} else {
 			return false;
@@ -143,7 +179,7 @@ public class BookRulesPlugin extends JavaPlugin {
 		
 		return list;
 	}
-	
+	/*
 	public void orderBooks() {
 		Set<String> set = books.getConfig().getKeys(false);
 		YamlConfiguration tempConfig = books.getConfig();
@@ -156,5 +192,5 @@ public class BookRulesPlugin extends JavaPlugin {
 		}
 		
 		books.save();
-	}
+	}*/
 }
