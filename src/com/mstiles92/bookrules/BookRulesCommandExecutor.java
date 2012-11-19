@@ -56,7 +56,7 @@ public class BookRulesCommandExecutor implements CommandExecutor {
 			}
 			
 			if (args.length < 2) {
-				if (plugin.giveAllBooks(p)) {
+				if (plugin.giveAllBooks(p, true)) {
 					p.sendMessage(plugin.tag + "You have received a copy of all registered books.");
 				} else {
 					p.sendMessage(plugin.tag + ChatColor.RED + "No books defined.");

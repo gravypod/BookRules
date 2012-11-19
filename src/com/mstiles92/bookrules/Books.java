@@ -98,11 +98,11 @@ public class Books {
 		Set<String> contents = this.getConfig().getKeys(false);
 		String value;
 		
-		for (int x = 0; x < contents.size(); x++) {
-			value = (String) this.getConfig().getConfigurationSection(String.valueOf(x)).get("Title");
+		for (String s : contents) {
+			value = this.getConfig().getString(s + ".Title");
 			
-			if (value == title) {
-				return String.valueOf(x);
+			if (title.equalsIgnoreCase(value)) {
+				return s;
 			}
 		}
 		return null;

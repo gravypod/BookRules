@@ -103,7 +103,7 @@ public class BookRulesPlugin extends JavaPlugin {
 		return true;
 	}
 	
-	public boolean giveAllBooks(Player p) {
+	public boolean giveAllBooks(Player p, boolean force) {
 		Set<String> set = books.getConfig().getKeys(false);
 		if (set.size() == 0) {
 			return false;
@@ -121,7 +121,7 @@ public class BookRulesPlugin extends JavaPlugin {
 			
 			ArrayList<String> notGiven = new ArrayList<String>();
 			for (String s : set) {
-				if (rs.getShort("Book" + s) != 1) {
+				if (rs.getShort("Book" + s) != 1 || force) {
 					notGiven.add(s);
 				} else {
 					this.log("Player already given book " + s);

@@ -13,7 +13,7 @@ public class GiveBookRunnable implements Runnable {
 	
 	@Override
 	public void run() {
-		plugin.giveAllBooks(player);
+		plugin.giveAllBooks(player, false);
 	}
 
 }
