@@ -3,6 +3,7 @@ package com.mstiles92.bookrules;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Set;
 
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -91,5 +92,19 @@ public class Books {
 			load("books.yml");
 		}
 		return booksConfig;
+	}
+	
+	public String lookupID(String title) {
+		Set<String> contents = this.getConfig().getKeys(false);
+		String value;
+		
+		for (int x = 0; x < contents.size(); x++) {
+			value = (String) this.getConfig().getConfigurationSection(String.valueOf(x)).get("Title");
+			
+			if (value == title) {
+				return String.valueOf(x);
+			}
+		}
+		return null;
 	}
 }

@@ -77,7 +77,10 @@ public class BookRulesPlugin extends JavaPlugin {
 	
 	public boolean giveBook(Player p, String ID) {
 		if (books.getConfig().get(ID) == null) {
-			return false;
+			ID = books.lookupID(ID);
+			if (ID == null) {
+				return false;
+			}
 		}
 		
 		WrittenBook book = new CraftWrittenBook();
