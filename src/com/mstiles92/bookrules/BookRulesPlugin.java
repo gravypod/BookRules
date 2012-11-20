@@ -45,6 +45,8 @@ public class BookRulesPlugin extends JavaPlugin {
 		try {
 			sqlite.open();
 			sqlite.query("CREATE TABLE IF NOT EXISTS players(Id INTEGER PRIMARY KEY AUTOINCREMENT, Name VARCHAR(20));");
+			sqlite.query("CREATE TABLE IF NOT EXISTS info(Id INTEGER PRIMARY KEY AUTOINCREMENT, Setting VARCHAR(50), Value INTEGER);");
+			//TODO: Assign DB ids to existing books if needed
 		} catch (SQLException e) {
 			this.getLogger().warning("SQLite initialization error: " + e.getMessage());
 			this.getPluginLoader().disablePlugin(this);
@@ -82,6 +84,8 @@ public class BookRulesPlugin extends JavaPlugin {
 				return false;
 			}
 		}
+		
+		//TODO: change to look up by DB id instead of listed id
 		
 		WrittenBook book = new CraftWrittenBook();
 		
@@ -156,6 +160,7 @@ public class BookRulesPlugin extends JavaPlugin {
 		books.getConfig().createSection(ID + ".Pages", map);
 		books.getConfig().set(ID + ".Title", book.getTitle());
 		books.getConfig().set(ID + ".Author", book.getAuthor());
+		//TODO: assign DB id as well
 		books.save();
 		sqlite.query("ALTER TABLE players ADD Book" + ID + " TINYINT(1);");
 	}
@@ -180,7 +185,23 @@ public class BookRulesPlugin extends JavaPlugin {
 			list.add(line);
 		}
 		
+		//TODO: show numbers in order, not reliant on DB id for display
+		
 		return list;
+	}
+	
+	public Integer newDbId() {
+		ResultSet rs = sqlite.query("SELECT * FROM info WHERE Setting='CurrentID';");
+		try {
+			rs.next();
+			int result = rs.getInt("Value");
+			rs.close();
+			sqlite.query("UPDATE info SET Value=" + (result + 1) + " WHERE Setting='CurrentID';");
+			return result;
+		} catch (SQLException e) {
+			this.getLogger().warning("SQLite error: " + e.getMessage());
+		}
+		return null;
 	}
 	/*
 	public void orderBooks() {
